@@ -1,9 +1,10 @@
 // ####################################################################################
 // #######                                                                      #######
-// ####### Plugin:      jScroll                                                 #######
-// ####### Author:      William Duffy                                           #######
-// ####### Website:     http://www.wduffy.co.uk/jScroll                         #######
-// ####### Version:     1.1	                                                    #######
+// #######           Plugin:      jScroll                                       #######
+// #######    Update Author:      Keith Sirmons                                 #######
+// #######  Original Author:      William Duffy                                 #######
+// ####### Original Website:      http://www.wduffy.co.uk/jScroll               #######
+// ####### Version:     1.2	                                                    #######
 // #######                                                                      #######
 // ####### Copyright (c) 2011, William Duffy - www.wduffy.co.uk                 #######
 // #######                                                                      #######
@@ -29,52 +30,64 @@
 // ####### OTHER DEALINGS IN THE SOFTWARE.                                      #######
 // #######                                                                      #######
 // ####################################################################################
-(function($) {
-    
+(function ($) {
+
     // Public: jScroll Plugin
-    $.fn.jScroll = function(options) {
+    $.fn.jScroll = function (options) {
 
         var opts = $.extend({}, $.fn.jScroll.defaults, options);
 
-        return this.each(function() {
-			var $element = $(this);
-			var $window = $(window);
-			var locator = new location($element);
+        return this.each(function () {
+            var $elementToStayVisible = $(this);
+            var $contentContainer = $(this).parent();
+            var $scrollWindow = $contentContainer.parent();
+            var locator = new location($elementToStayVisible);
 			
-			$window.scroll(function() {
-				$element
+            $scrollWindow.on("scroll", function () {                
+                $elementToStayVisible
 					.stop()
-					.animate(locator.getMargin($window), opts.speed);
-			});
+					.animate(locator.getMargin($scrollWindow), opts.speed);
+            });
         });
-		
-		// Private 
-		function location($element)
-		{
-			this.min = $element.offset().top;
-			this.originalMargin = parseInt($element.css("margin-top"), 10) || 0;
+
+        // Private to the individual scrollElement
+        function location($elementToStayVisible) {
+      
+            this.originalMargin = parseInt($elementToStayVisible.css("margin-top"), 10) || 0;
+			this.originalBottomMargin = parseInt($elementToStayVisible.css("margin-bottom"), 10) || 0;
 			
-			this.getMargin = function ($window)
-			{
-				var max = $element.parent().height() - $element.outerHeight();
-				var margin = this.originalMargin;
-			
-				if ($window.scrollTop() >= this.min)
-					margin = margin + opts.top + $window.scrollTop() - this.min; 
+			console.debug($elementToStayVisible.attr("id") + " margin - " + this.originalMargin );
+            
+			this.getMargin = function ($scrollWindow) {
+                var elementOffsetFromScrollWindowTop = $elementToStayVisible.parent().offset().top - $scrollWindow.offset().top + $scrollWindow.scrollTop();
+                var maxMargin = $elementToStayVisible.parent().height() - ( $elementToStayVisible.outerHeight() + this.originalBottomMargin );  					
 				
-				if (margin > max)
-					margin = max;
-			
-				return ({"marginTop" : margin + 'px'});
-			}
-		}	   
-		
+				if (maxMargin < 0){
+					maxMargin = 0;
+				}
+				var margin = this.originalMargin;
+
+                if ($scrollWindow.scrollTop() > elementOffsetFromScrollWindowTop ) {
+                    var tmp = opts.top + $scrollWindow.scrollTop() - elementOffsetFromScrollWindowTop;
+					if (tmp > margin)
+					{
+						margin = tmp;
+					}
+				}
+
+                if (margin > maxMargin) {
+                    margin = maxMargin;
+				}
+				
+                return ({ "marginTop": margin + 'px' });
+            }
+        }
     };
 
     // Public: Default values
     $.fn.jScroll.defaults = {
-        speed	:	"slow",
-		top		:	10
+        speed: "slow",
+        top: 10
     };
 
 })(jQuery);
