@@ -55,9 +55,7 @@
       
             this.originalMargin = parseInt($elementToStayVisible.css("margin-top"), 10) || 0;
 			this.originalBottomMargin = parseInt($elementToStayVisible.css("margin-bottom"), 10) || 0;
-			
-			console.debug($elementToStayVisible.attr("id") + " margin - " + this.originalMargin );
-            
+			           
 			this.getMargin = function ($scrollWindow) {
                 var elementOffsetFromScrollWindowTop = $elementToStayVisible.parent().offset().top - $scrollWindow.offset().top + $scrollWindow.scrollTop();
                 var maxMargin = $elementToStayVisible.parent().height() - ( $elementToStayVisible.outerHeight() + this.originalBottomMargin );  					
